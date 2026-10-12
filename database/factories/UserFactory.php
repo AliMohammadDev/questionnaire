@@ -3,9 +3,11 @@
 namespace Database\Factories;
 
 use App\Models\User;
+use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 /**
  * @extends Factory<User>
@@ -25,7 +27,7 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
+            'name' => fake()->randomElement(['أحمد العلي', 'ليلى حسن', 'محمد الخطيب', 'سارة إبراهيم', 'عمر الحسن', 'نور أحمد']),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
@@ -41,5 +43,16 @@ class UserFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
         ]);
+    }
+
+    public function administrator(): static
+    {
+        return $this->afterCreating(function (User $user): void {
+            if (! Role::where('name', config('filament-shield.super_admin.name'))->exists()) {
+                (new RolesAndPermissionsSeeder)->run();
+            }
+
+            $user->assignRole(config('filament-shield.super_admin.name'));
+        });
     }
 }
