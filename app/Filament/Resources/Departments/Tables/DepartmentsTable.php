@@ -6,6 +6,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
@@ -15,6 +16,7 @@ class DepartmentsTable
     public static function configure(Table $table): Table
     {
         return $table->columns([
+            SpatieMediaLibraryImageColumn::make('gallery')->label('الصورة')->collection('gallery')->circular()->imageSize(48)->limit(1),
             TextColumn::make('name')->label('القسم')->searchable()->sortable(),
             IconColumn::make('is_active')->label('فعال')->boolean(),
             TextColumn::make('sort_order')->label('الترتيب')->sortable(),

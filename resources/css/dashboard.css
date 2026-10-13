@@ -204,3 +204,17 @@
         object-fit: contain;
     }
 }
+
+.questionnaire-image-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.questionnaire-image-option img {
+    width: 88px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
+}

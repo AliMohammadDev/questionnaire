@@ -38,6 +38,7 @@ class QuestionnaireQuestionResource extends JsonResource
             'options' => $this->options->map(fn (QuestionOption $option): array => [
                 'id' => $option->id,
                 'label' => $option->label,
+                'image' => $option->getFirstMedia('image')?->getUrl(),
                 'value' => $option->value,
                 'sort_order' => $option->sort_order,
             ])->all(),

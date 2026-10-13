@@ -52,14 +52,18 @@ it('seeds a complete questionnaire with consistent project paths and selected op
     foreach (Media::all() as $media) {
         Storage::disk('public')->assertExists($media->getPathRelativeToRoot());
         expect($media->getCustomProperty('demo'))->toBeTrue();
+        expect($media->getCustomProperty('source_url'))->toStartWith('https://www.pexels.com/photo/');
+        expect($media->mime_type)->toBe('image/jpeg');
     }
     foreach ([Department::class, ProjectCategory::class, ProjectType::class, DesignStyle::class] as $model) {
         foreach ($model::all() as $record) {
             expect($record->getMedia($model === ProjectType::class ? 'image' : 'gallery'))->toHaveCount(2);
         }
     }
-    foreach (QuestionOption::all() as $option) {
-        expect($option->getMedia('image'))->toHaveCount(1);
+    foreach (QuestionSeeder::definitions() as $key => $definition) {
+        foreach (QuestionSeeder::question($key)->options as $option) {
+            expect($option->getMedia('image'))->toHaveCount(isset($definition['option_images'][$option->value]) ? 1 : 0);
+        }
     }
     expect(AnswerType::where('code', 'multiple_choice')->sole()->allows_multiple)->toBeTrue();
     expect(AnswerType::where('code', 'single_choice')->sole()->allows_multiple)->toBeFalse();
@@ -194,5 +198,24 @@ it('uses budgets and dates appropriate to the project scope and recorded dates',
     foreach (Project::whereNull('submitted_at')->get() as $project) {
         expect($project->submitted_at)->toBeNull();
         expect($project->completed_at)->toBeNull();
+    }
+});
+
+it('provides department-specific visual questions with distinct photos usable in the api', function (): void {
+    Storage::fake('public');
+    $this->seed(DatabaseSeeder::class);
+    foreach (['DEMO-ARCH-RES' => 'architecture-visual', 'DEMO-GRAPH-SOCIAL' => 'graphic-visual', 'DEMO-WEB-SHOP' => 'web-visual'] as $projectCode => $key) {
+        $project = Project::where('project_code', $projectCode)->sole();
+        $question = QuestionSeeder::question($key);
+        $options = $question->options()->with('media')->get();
+        expect($options->map(fn (QuestionOption $option): string => $option->getFirstMedia('image')->getCustomProperty('source_url'))->unique())->toHaveCount($options->count());
+        $response = $this->getJson(route('api.projects.questionnaire.index', $project))->assertOk();
+        $data = collect($response->json('data'))->firstWhere('id', $question->id);
+        expect($data)->not->toBeNull();
+        expect($data['options'][0]['image'])->toBe($options->first()->getFirstMediaUrl('image'));
+        expect($data['answer_type']['code'])->toBe('single_choice');
+    }
+    foreach (QuestionSeeder::definitions() as $definition) {
+        expect($definition['description'])->not->toBeEmpty();
     }
 });

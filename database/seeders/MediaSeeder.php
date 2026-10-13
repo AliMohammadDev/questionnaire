@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Media;
 use App\Models\Project;
-use App\Models\QuestionOption;
+use App\Support\SeedPhotoCatalog;
 use Illuminate\Database\Seeder;
 use Spatie\MediaLibrary\HasMedia;
 
@@ -14,75 +14,112 @@ class MediaSeeder extends Seeder
     {
         foreach (DepartmentSeeder::catalog() as $departmentKey => $departmentData) {
             $department = DepartmentSeeder::department($departmentKey);
-            $this->addExampleImage($department, 'gallery', $department->sort_order);
-            $this->addExampleImage($department, 'gallery', $department->sort_order + 1, 1);
+            $photos = match ($departmentKey) {
+                'architecture' => ['architecture', 'buildings'],
+                'graphic-design' => ['graphic', 'branding'],
+                'web-design' => ['web', 'services'],
+            };
+            foreach ($photos as $slot => $photo) {
+                $this->addPhoto($department, 'gallery', $photo, $slot);
+            }
             foreach (array_keys($departmentData['categories']) as $categoryKey) {
                 $category = ProjectCategorySeeder::category($departmentKey, $categoryKey);
-                $this->addExampleImage($category, 'gallery', $category->sort_order);
-                $this->addExampleImage($category, 'gallery', $category->sort_order + 1, 1);
+                $photos = $this->categoryPhotos($categoryKey);
+                foreach ($photos as $slot => $photo) {
+                    $this->addPhoto($category, 'gallery', $photo, $slot);
+                }
+                foreach (array_keys($departmentData['categories'][$categoryKey]['types']) as $typeKey) {
+                    $type = ProjectTypeSeeder::type($departmentKey, $categoryKey, $typeKey);
+                    $typePhotos = $this->typePhotos($typeKey, $categoryKey);
+                    foreach ($typePhotos as $slot => $photo) {
+                        $this->addPhoto($type, 'image', $photo, $slot);
+                    }
+                }
             }
         }
-        foreach (array_keys(DesignStyleSeeder::catalog()) as $index => $styleKey) {
+        foreach (array_keys(DesignStyleSeeder::catalog()) as $styleKey) {
             $style = DesignStyleSeeder::style($styleKey);
-            $this->addExampleImage($style, 'cover', $index);
-            $this->addExampleImage($style, 'gallery', $index + 2);
-            $this->addExampleImage($style, 'gallery', $index + 3, 1);
+            $photo = match ($styleKey) {
+                'neoclassical' => 'classic',
+                'contemporary' => 'modern',
+                'corporate' => 'office',
+                'playful' => 'colorful',
+                default => $styleKey,
+            };
+            $this->addPhoto($style, 'cover', $photo);
+            $this->addPhoto($style, 'gallery', $photo);
+            $this->addPhoto($style, 'gallery', $styleKey === 'playful' ? 'graphic' : ($styleKey === 'corporate' ? 'services' : $photo), 1);
         }
-        foreach (array_values(ProjectSeeder::scenarios()) as $index => $scenario) {
-            $type = ProjectTypeSeeder::type($scenario['department'], $scenario['category'], $scenario['type']);
-            $this->addExampleImage($type, 'image', $index);
-            $this->addExampleImage($type, 'image', $index + 1, 1);
+        foreach (QuestionSeeder::definitions() as $key => $definition) {
+            foreach (QuestionSeeder::question($key)->options()->get() as $option) {
+                $photo = $definition['option_images'][$option->value] ?? null;
+                if ($photo) {
+                    $this->addPhoto($option, 'image', $photo);
+                } else {
+                    foreach ($option->getMedia('image') as $media) {
+                        if ($media->getCustomProperty('demo')) {
+                            $media->delete();
+                        }
+                    }
+                }
+            }
         }
-        foreach (QuestionOption::orderBy('id')->get() as $index => $option) {
-            $this->addExampleImage($option, 'image', $index);
-        }
-        foreach (array_keys(ProjectSeeder::scenarios()) as $index => $code) {
+        foreach (ProjectSeeder::scenarios() as $code => $scenario) {
             $project = Project::where('project_code', $code)->sole();
-            $this->addExampleImage($project, 'attachments', $index);
+            $photo = $this->typePhotos($scenario['type'], $scenario['category'])[0];
+            $this->addPhoto($project, 'attachments', $photo);
             $answer = $project->answers()->where('question_id', QuestionSeeder::question('references')->id)->first();
             if ($answer) {
-                $this->addExampleImage($answer, 'attachments', $index);
+                $this->addPhoto($answer, 'attachments', $photo);
             }
         }
     }
 
-    private function addExampleImage(HasMedia $model, string $collection, int $index, int $slot = 0): void
+    /** @return array{string, string} */
+    private function categoryPhotos(string $key): array
     {
-        if ($model->hasMedia($collection)) {
-            $existing = $model->getMedia($collection);
-            if ($existing->contains(fn (Media $media): bool => ! $media->getCustomProperty('demo'))
-                || $existing->contains(fn (Media $media): bool => (int) $media->getCustomProperty('seed_image_slot', 0) === $slot)) {
-                return;
-            }
+        return match ($key) {
+            'residential' => ['architecture', 'residential'],
+            'commercial' => ['commercial', 'office'],
+            'industrial' => ['industrial', 'buildings'],
+            'branding' => ['branding', 'graphic'],
+            'print-design' => ['printing', 'graphic'],
+            'digital-marketing' => ['marketing', 'graphic'],
+            'corporate-websites' => ['web', 'services'],
+            'e-commerce' => ['ecommerce', 'web'],
+            'service-platforms' => ['services', 'web'],
+        };
+    }
+
+    /** @return array{string, string} */
+    private function typePhotos(string $type, string $category): array
+    {
+        return match ($type) {
+            'villa' => ['architecture', 'residential'],
+            'apartment' => ['residential', 'modern'],
+            'residential-complex', 'office-building' => ['buildings', 'office'],
+            'restaurant', 'retail-store' => ['commercial', 'office'],
+            default => $this->categoryPhotos($category),
+        };
+    }
+
+    private function addPhoto(HasMedia $model, string $collection, string $photo, int $slot = 0): void
+    {
+        $existing = $model->getMedia($collection);
+        if ($existing->contains(fn (Media $media): bool => ! $media->getCustomProperty('demo'))) {
+            return;
         }
-        $path = tempnam(sys_get_temp_dir(), 'questionnaire-seed-');
-        if ($path === false) {
-            throw new \RuntimeException('Unable to create a temporary seed image.');
+        $previous = $existing->first(fn (Media $media): bool => (int) $media->getCustomProperty('seed_image_slot', 0) === $slot);
+        $source = SeedPhotoCatalog::sourceUrl($photo);
+        if ($previous?->getCustomProperty('source_url') === $source) {
+            return;
         }
-        try {
-            $image = imagecreatetruecolor(640, 400);
-            $palettes = [[124, 58, 237], [14, 116, 144], [180, 83, 9], [75, 85, 99], [5, 150, 105]];
-            [$red, $green, $blue] = $palettes[$index % count($palettes)];
-            $background = imagecolorallocate($image, 245, 243, 255);
-            $accent = imagecolorallocate($image, $red, $green, $blue);
-            $white = imagecolorallocate($image, 255, 255, 255);
-            imagefill($image, 0, 0, $background);
-            imagefilledrectangle($image, 55, 60, 585, 340, $white);
-            imagefilledrectangle($image, 85, 90, 320, 310, $accent);
-            imagefilledrectangle($image, 350, 100, 550, 135, $accent);
-            imagefilledrectangle($image, 350, 170, 510, 195, $background);
-            imagefilledrectangle($image, 350, 220, 550, 245, $background);
-            imagepng($image, $path);
-            imagedestroy($image);
-            $model->addMedia($path)->usingName('صورة مرجعية تجريبية — ليست صورة مشروع حقيقي')
-                ->usingFileName($slot === 0 ? 'demo-reference.png' : 'demo-reference-'.($slot + 1).'.png')
-                ->withCustomProperties(['demo' => true, 'language' => 'ar', 'seed_image_slot' => $slot])
-                ->toMediaCollection($collection, 'public');
-            $model->unsetRelation('media');
-        } finally {
-            if (is_file($path)) {
-                unlink($path);
-            }
-        }
+        $model->addMedia(SeedPhotoCatalog::path($photo))->preservingOriginal()
+            ->usingName('صورة مرجعية — '.$photo)
+            ->usingFileName('reference-'.$photo.'-'.($slot + 1).'.jpg')
+            ->withCustomProperties(['demo' => true, 'seed_image_slot' => $slot, 'source_url' => $source, 'source' => 'Pexels', 'license_url' => 'https://www.pexels.com/license/'])
+            ->toMediaCollection($collection, 'public');
+        $previous?->delete();
+        $model->unsetRelation('media');
     }
 }

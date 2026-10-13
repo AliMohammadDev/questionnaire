@@ -29,7 +29,7 @@ class QuestionnaireService
                     });
                 }
             })
-            ->with(['questionSection', 'answerType', 'conditions.dependsOnQuestion:id,title', 'options' => fn (HasMany $query): HasMany => $query->where('is_active', true)->orderBy('sort_order')->orderBy('id')])
+            ->with(['questionSection', 'answerType', 'conditions.dependsOnQuestion:id,title', 'options.media', 'options' => fn (HasMany $query): HasMany => $query->where('is_active', true)->orderBy('sort_order')->orderBy('id')])
             ->orderBy('sort_order')->orderBy('id')->get();
     }
 

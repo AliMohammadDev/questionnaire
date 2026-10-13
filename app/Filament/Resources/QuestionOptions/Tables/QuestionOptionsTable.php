@@ -15,7 +15,7 @@ class QuestionOptionsTable
     public static function configure(Table $table): Table
     {
         return $table->columns([
-            SpatieMediaLibraryImageColumn::make('image')->label('الصورة')->collection('image')->square(),
+            SpatieMediaLibraryImageColumn::make('image')->label('الصورة')->collection('image')->circular()->imageSize(48)->limit(1),
             TextColumn::make('label')->label('الخيار')->searchable(),
             TextColumn::make('question.title')->label('السؤال')->searchable()->limit(50),
             IconColumn::make('is_active')->label('فعال')->boolean(),

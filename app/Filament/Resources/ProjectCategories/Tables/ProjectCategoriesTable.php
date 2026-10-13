@@ -5,6 +5,7 @@ namespace App\Filament\Resources\ProjectCategories\Tables;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
@@ -14,6 +15,7 @@ class ProjectCategoriesTable
     public static function configure(Table $table): Table
     {
         return $table->columns([
+            SpatieMediaLibraryImageColumn::make('gallery')->label('الصورة')->collection('gallery')->circular()->imageSize(48)->limit(1),
             TextColumn::make('name')->label('التصنيف')->searchable()->sortable(),
             TextColumn::make('department.name')->label('القسم')->searchable(),
             IconColumn::make('is_active')->label('فعال')->boolean(),

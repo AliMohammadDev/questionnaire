@@ -15,7 +15,7 @@ class ProjectTypesTable
     public static function configure(Table $table): Table
     {
         return $table->columns([
-            SpatieMediaLibraryImageColumn::make('image')->label('الصورة')->collection('image')->square(),
+            SpatieMediaLibraryImageColumn::make('image')->label('الصورة')->collection('image')->circular()->imageSize(48)->limit(1),
             TextColumn::make('name')->label('النوع')->searchable()->sortable(),
             TextColumn::make('projectCategory.name')->label('التصنيف')->searchable(),
             IconColumn::make('is_active')->label('فعال')->boolean(),

@@ -15,7 +15,7 @@ class DesignStylesTable
     public static function configure(Table $table): Table
     {
         return $table->columns([
-            SpatieMediaLibraryImageColumn::make('cover')->label('الغلاف')->collection('cover')->square(),
+            SpatieMediaLibraryImageColumn::make('cover')->label('الغلاف')->collection('cover')->circular()->imageSize(48)->limit(1),
             TextColumn::make('name')->label('النمط')->searchable()->sortable(),
             IconColumn::make('is_active')->label('فعال')->boolean(),
             TextColumn::make('sort_order')->label('الترتيب')->sortable(),
