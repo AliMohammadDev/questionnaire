@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AnswerTypeController;
 use App\Http\Controllers\Api\ClientController;
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\DesignStyleController;
+use App\Http\Controllers\Api\ProjectAnswerController;
 use App\Http\Controllers\Api\ProjectCategoryController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\ProjectQuestionnaireController;
@@ -18,3 +19,4 @@ Route::get('design-styles', [DesignStyleController::class, 'index'])->name('api.
 Route::post('clients', [ClientController::class, 'store'])->name('api.clients.store');
 Route::post('projects', [ProjectController::class, 'store'])->name('api.projects.store');
 Route::get('projects/{project}/questionnaire', [ProjectQuestionnaireController::class, 'index'])->name('api.projects.questionnaire.index');
+Route::post('projects/{project}/answers', [ProjectAnswerController::class, 'store'])->name('api.projects.answers.store');

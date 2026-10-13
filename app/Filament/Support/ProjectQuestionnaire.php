@@ -4,7 +4,6 @@ namespace App\Filament\Support;
 
 use App\Models\Project;
 use App\Models\Question;
-use App\Models\QuestionCondition;
 use App\Services\QuestionnaireService;
 use Closure;
 use Filament\Forms\Components\DatePicker;
@@ -106,35 +105,7 @@ class ProjectQuestionnaire
      */
     public static function isVisible(Question $question, Collection $questions, array $answers, array $visited = []): bool
     {
-        if (in_array($question->id, $visited, true)) {
-            return false;
-        }
-        $visited[] = $question->id;
-        $result = null;
-        foreach ($question->conditions as $condition) {
-            $source = $questions->get($condition->depends_on_question_id);
-            $value = $answers[$condition->depends_on_question_id] ?? null;
-            $matches = $source && self::isVisible($source, $questions, $answers, $visited)
-              && filled($value) && self::matches($condition, $value);
-            $result = $result === null ? $matches : ($condition->logic_type === 'OR' ? $result || $matches : $result && $matches);
-        }
-
-        return $result ?? true;
-    }
-
-    private static function matches(QuestionCondition $condition, mixed $value): bool
-    {
-        $expected = $condition->question_option_id ?? $condition->value;
-        $selected = in_array((string) $expected, array_map('strval', (array) $value), true);
-
-        return match ($condition->operator) {
-            'equals', 'selected' => $selected,
-            'not_equals', 'not_selected' => ! $selected,
-            'greater_than' => is_numeric($value) && is_numeric($expected) && $value > $expected,
-            'less_than' => is_numeric($value) && is_numeric($expected) && $value < $expected,
-            'contains' => is_array($value) ? $selected : str_contains((string) $value, (string) $expected),
-            default => false,
-        };
+        return app(QuestionnaireService::class)->isVisible($question, $questions, $answers, $visited);
     }
 
     /**
