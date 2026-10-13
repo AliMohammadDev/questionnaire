@@ -5,6 +5,7 @@ namespace App\Filament\Support;
 use App\Models\Project;
 use App\Models\Question;
 use App\Models\QuestionCondition;
+use App\Services\QuestionnaireService;
 use Closure;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
@@ -16,9 +17,7 @@ use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Validation\Rule;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
@@ -30,21 +29,7 @@ class ProjectQuestionnaire
      */
     public static function questions(array $projectData): Collection
     {
-        return Question::query()->where('is_active', true)
-            ->whereHas('questionSection', fn (Builder $query): Builder => $query->where('is_active', true))
-            ->whereHas('answerType', fn (Builder $query): Builder => $query->where('is_active', true))
-            ->whereHas('contexts', function (Builder $query) use ($projectData): void {
-                foreach (['department_id', 'project_category_id', 'project_type_id', 'design_style_id'] as $column) {
-                    $query->where(function (Builder $query) use ($projectData, $column): void {
-                        $query->whereNull($column);
-                        if (filled($projectData[$column] ?? null)) {
-                            $query->orWhere($column, $projectData[$column]);
-                        }
-                    });
-                }
-            })
-            ->with(['questionSection', 'answerType', 'conditions', 'options' => fn (HasMany $query): HasMany => $query->where('is_active', true)->orderBy('sort_order')->orderBy('id')])
-            ->orderBy('sort_order')->orderBy('id')->get();
+        return app(QuestionnaireService::class)->getQuestions($projectData);
     }
 
     /**
