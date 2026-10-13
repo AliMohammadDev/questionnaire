@@ -10,16 +10,16 @@ use Filament\Support\Icons\Heroicon;
 
 class Dashboard extends BaseDashboard
 {
-    use HasPageShield;
+  use HasPageShield;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            Action::make('createProject')
-                ->label('إضافة مشروع جديد')
-                ->icon(Heroicon::OutlinedPlus)
-                ->url(fn (): string => ProjectResource::getUrl('create'))
-                ->visible(fn (): bool => ProjectResource::canCreate()),
-        ];
-    }
+  protected function getHeaderActions(): array
+  {
+    return [
+      Action::make('createProject')
+        ->label('إضافة  استبيان جديد')
+        ->icon(Heroicon::OutlinedPlus)
+        ->url(fn(): string => ProjectResource::getUrl('create'))
+        ->visible(fn(): bool => ProjectResource::canCreate()),
+    ];
+  }
 }

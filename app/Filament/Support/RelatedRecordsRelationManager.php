@@ -8,18 +8,18 @@ use Filament\Tables\Table;
 
 abstract class RelatedRecordsRelationManager extends RelationManager
 {
-    public function isReadOnly(): bool
-    {
-        return true;
-    }
+  public function isReadOnly(): bool
+  {
+    return true;
+  }
 
-    public function table(Table $table): Table
-    {
-        return $table
-            ->headerActions([])
-            ->recordActions([ViewAction::make()])
-            ->toolbarActions([])
-            ->emptyStateHeading('لا توجد سجلات مرتبطة')
-            ->emptyStateDescription('ستظهر هنا السجلات التابعة لهذا السجل عند إضافتها.');
-    }
+  public function table(Table $table): Table
+  {
+    return $table
+      ->headerActions([])
+      ->recordActions([ViewAction::make()])
+      ->toolbarActions([])
+      ->emptyStateHeading('لا توجد سجلات مرتبطة')
+      ->emptyStateDescription('ستظهر هنا السجلات التابعة لهذا السجل عند إضافتها.');
+  }
 }
