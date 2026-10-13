@@ -3,35 +3,15 @@
     isolation: isolate;
     overflow: hidden;
     min-height: 176px;
-    border: 1px solid rgb(255 255 255 / 18%);
+    border: 1px solid #cbd5e1;
     border-radius: 18px;
     background: linear-gradient(135deg, var(--stat-start), var(--stat-end));
     box-shadow: 0 8px 22px rgb(15 23 42 / 12%);
     transition: transform 180ms ease, box-shadow 180ms ease;
-    --stat-text: #fff;
-    --stat-muted: rgb(255 255 255 / 90%);
-}
-
-.questionnaire-stat-blue {
-    --stat-start: #2563eb;
-    --stat-end: #1e40af;
-}
-
-.fi-wi-stats-overview-stat.questionnaire-stat-yellow {
-    --stat-start: #fde047;
-    --stat-end: #facc15;
-    --stat-text: #422006;
-    --stat-muted: #713f12;
-}
-
-.questionnaire-stat-red {
-    --stat-start: #dc2626;
-    --stat-end: #b91c1c;
-}
-
-.questionnaire-stat-green {
-    --stat-start: #15803d;
-    --stat-end: #166534;
+    --stat-start: #f1f5f9;
+    --stat-end: #cbd5e1;
+    --stat-text: #1e293b;
+    --stat-muted: #475569;
 }
 
 .questionnaire-stat::after {
@@ -42,7 +22,7 @@
     height: 150px;
     inset-inline-end: -50px;
     inset-block-start: -55px;
-    border: 22px solid rgb(255 255 255 / 10%);
+    border: 22px solid rgb(255 255 255 / 30%);
     border-radius: 50%;
     pointer-events: none;
 }
@@ -70,7 +50,7 @@
 }
 
 .questionnaire-stat:focus-visible {
-    outline: 3px solid var(--stat-start);
+    outline: 3px solid var(--stat-text);
     outline-offset: 4px;
 }
 
@@ -100,12 +80,12 @@
 
 .project-question-answer .fi-in-entry-label-col {
     padding: 8px 12px;
-    background: #f8f7fc;
+    background: #f1f5f9;
     border-bottom: 1px solid #e2e8f0;
 }
 
 .project-question-answer .fi-in-entry-label {
-    color: #5b21b6;
+    color: #475569;
     font-size: 0.875rem;
     font-weight: 600;
     line-height: 1.5;
@@ -125,20 +105,20 @@
 }
 
 .dark .project-question-answer {
-    border-color: #374151;
+    border-color: #3f3f46;
 }
 
 .dark .project-question-answer .fi-in-entry-label-col {
-    background: #241d30;
-    border-color: #374151;
+    background: #27272a;
+    border-color: #3f3f46;
 }
 
 .dark .project-question-answer .fi-in-entry-label {
-    color: #ddd6fe;
+    color: #cbd5e1;
 }
 
 .dark .project-question-answer .fi-in-entry-content-col {
-    background: #191c24;
+    background: #18181b;
 }
 
 .dark .project-question-answer .fi-in-text-item {

@@ -38,7 +38,8 @@ class AdminPanelProvider extends PanelProvider
             ->navigationGroups(['إعدادات المشاريع', 'إعداد الاستبيان', 'العملاء والمشاريع', 'الإجابات والمرفقات', 'إدارة النظام'])
             ->databaseTransactions()
             ->colors([
-                'primary' => Color::Purple,
+                'primary' => Color::Slate,
+                'gray' => Color::Zinc,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->plugins([
