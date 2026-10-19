@@ -53,6 +53,7 @@ class ProjectForm
           ->schema([
             Textarea::make('question')->label('السؤال')->required()->maxLength(2000)->rows(2),
             Textarea::make('answer')->label('الجواب')->maxLength(65535)->rows(3),
+            Textarea::make('notes')->label('ملاحظة')->maxLength(65535)->rows(2)->columnSpanFull(),
           ])
           ->defaultItems(0)->addActionLabel('إضافة سؤال')->columns(2)->columnSpanFull(),
       ])->columnSpanFull(),

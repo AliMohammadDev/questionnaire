@@ -39,6 +39,7 @@ class ProjectInfolist
         RepeatableEntry::make('additional_questions')->hiddenLabel()->schema([
           TextEntry::make('question')->label('السؤال'),
           TextEntry::make('answer')->label('الجواب')->placeholder('لم تتم الإجابة بعد'),
+          TextEntry::make('notes')->label('ملاحظة')->placeholder('—')->columnSpanFull(),
         ])->columns(2)->columnSpanFull(),
       ])->visible(fn(Project $record): bool => filled($record->additional_questions))->columnSpanFull(),
       Section::make('الصور والمرفقات')->icon(Heroicon::OutlinedPhoto)->schema([
