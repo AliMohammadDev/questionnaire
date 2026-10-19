@@ -20,3 +20,5 @@ Route::post('clients', [ClientController::class, 'store'])->name('api.clients.st
 Route::post('projects', [ProjectController::class, 'store'])->name('api.projects.store');
 Route::get('projects/{project}/questionnaire', [ProjectQuestionnaireController::class, 'index'])->name('api.projects.questionnaire.index');
 Route::post('projects/{project}/answers', [ProjectAnswerController::class, 'store'])->name('api.projects.answers.store');
+
+Route::patch('projects/{project}/additional-questions', [ProjectController::class, 'updateAdditionalQuestions'])->name('api.projects.additional-questions.update');

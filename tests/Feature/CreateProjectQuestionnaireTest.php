@@ -38,6 +38,7 @@ it('opens the questionnaire with only active questions matching all context dime
     $inactive->contexts()->create([]);
 
     Livewire::test(CreateProject::class)->fillForm(['department_id' => $project->department_id, 'project_category_id' => $project->project_category_id, 'project_type_id' => $project->project_type_id] + $project->getAttributes())
+        ->fillForm(['additional_questions' => [['question' => 'سؤال إضافي', 'answer' => 'جواب إضافي']]])
         ->goToNextWizardStep()->assertHasNoFormErrors()->assertWizardCurrentStep(2)
         ->assertFormFieldExists('questionnaire.'.$general->id)
         ->assertFormFieldExists('questionnaire.'.$matching->id)
@@ -47,6 +48,7 @@ it('opens the questionnaire with only active questions matching all context dime
         ->fillForm(['questionnaire' => [$general->id => 'دمشق', $matching->id => 'متطلبات التصميم']])
         ->call('create')->assertHasNoFormErrors();
 
+    expect(Project::sole()->additional_questions)->toBe([['question' => 'سؤال إضافي', 'answer' => 'جواب إضافي']]);
     $this->assertDatabaseCount('projects', 1);
     $this->assertDatabaseCount('answers', 2);
     $this->assertDatabaseHas('answers', ['question_id' => $general->id, 'value_text' => 'دمشق']);

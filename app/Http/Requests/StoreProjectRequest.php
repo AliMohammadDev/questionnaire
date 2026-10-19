@@ -28,6 +28,10 @@ class StoreProjectRequest extends FormRequest
             'design_style_id' => ['nullable', 'integer', Rule::exists(DesignStyle::class, 'id')],
             'project_name' => ['nullable', 'string', 'max:255'],
             'notes' => ['nullable', 'string'],
+            'additional_questions' => ['sometimes', 'array', 'list'],
+            'additional_questions.*' => ['array:question,answer'],
+            'additional_questions.*.question' => ['required', 'string', 'max:2000'],
+            'additional_questions.*.answer' => ['nullable', 'string', 'max:65535'],
         ];
     }
 }

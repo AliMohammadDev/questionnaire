@@ -9,7 +9,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /** @mixin Project */
 class ProjectResource extends JsonResource
 {
-    /** @return array{id: int, project_code: string, client_id: int, department_id: int, project_category_id: int, project_type_id: int, design_style_id: int|null, project_name: string|null, notes: string|null} */
+    /** @return array{id: int, project_code: string, client_id: int, department_id: int, project_category_id: int, project_type_id: int, design_style_id: int|null, project_name: string|null, notes: string|null, additional_questions: array<int, array{question: string, answer?: string|null}>} */
     public function toArray(Request $request): array
     {
         return [
@@ -22,6 +22,7 @@ class ProjectResource extends JsonResource
             'design_style_id' => $this->design_style_id,
             'project_name' => $this->project_name,
             'notes' => $this->notes,
+            'additional_questions' => $this->additional_questions ?? [],
         ];
     }
 }

@@ -52,3 +52,42 @@ it('rejects catalog selections from a different hierarchy', function (string $di
         ->assertJsonValidationErrors([$dimension === 'department_id' ? 'project_category_id' : 'project_type_id']);
     $this->assertDatabaseCount('projects', 0);
 })->with(['department_id', 'project_type_id']);
+
+it('stores additional questions when creating a project', function (): void {
+    $data = Project::factory()->make()->only(['client_id', 'department_id', 'project_category_id', 'project_type_id']);
+    $questions = [['question' => 'مكان القهوة؟', 'answer' => 'المطبخ'], ['question' => 'أثاث قديم؟', 'answer' => null]];
+
+    $response = $this->postJson(route('api.projects.store'), $data + ['additional_questions' => $questions]);
+    $response->assertCreated()->assertJsonPath('data.additional_questions', $questions);
+    expect(Project::sole()->additional_questions)->toBe($questions);
+});
+
+it('replaces and clears additional questions without changing project details', function (): void {
+    $project = Project::factory()->create(['additional_questions' => [['question' => 'قديم', 'answer' => 'جواب']]]);
+    $questions = [['question' => 'جديد', 'answer' => 'نعم'], ['question' => 'بانتظار الإجابة']];
+    $route = route('api.projects.additional-questions.update', $project);
+
+    $this->patchJson($route, ['additional_questions' => $questions, 'project_name' => 'تغيير غير مسموح'])
+        ->assertOk()->assertJsonPath('data.additional_questions', $questions);
+    expect($project->fresh()->additional_questions)->toBe($questions);
+    expect($project->fresh()->project_name)->toBe($project->project_name);
+    $this->getJson(route('api.projects.questionnaire.index', $project))->assertOk()
+        ->assertJsonPath('additional_questions', $questions);
+
+    $this->patchJson($route, ['additional_questions' => []])->assertOk()->assertJsonPath('data.additional_questions', []);
+    expect($project->fresh()->additional_questions)->toBe([]);
+});
+
+it('rejects malformed additional questions without changing saved values', function (array $payload, string $error): void {
+    $project = Project::factory()->create(['additional_questions' => [['question' => 'محفوظ', 'answer' => null]]]);
+
+    $this->patchJson(route('api.projects.additional-questions.update', $project), $payload)
+        ->assertUnprocessable()->assertJsonValidationErrors([$error]);
+    expect($project->fresh()->additional_questions)->toBe($project->additional_questions);
+})->with([
+    'missing list' => [[], 'additional_questions'],
+    'invalid list' => [['additional_questions' => 'text'], 'additional_questions'],
+    'empty question' => [['additional_questions' => [['question' => '']]], 'additional_questions.0.question'],
+    'invalid answer' => [['additional_questions' => [['question' => 'سؤال', 'answer' => ['invalid']]]], 'additional_questions.0.answer'],
+    'unknown keys' => [['additional_questions' => [['question' => 'سؤال', 'unexpected' => true]]], 'additional_questions.0'],
+]);

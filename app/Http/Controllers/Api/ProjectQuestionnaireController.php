@@ -16,6 +16,6 @@ class ProjectQuestionnaireController extends Controller
     {
         return QuestionnaireQuestionResource::collection(
             $this->questionnaireService->getQuestions($project->getAttributes()),
-        )->additional(['project_id' => $project->id]);
+        )->additional(['project_id' => $project->id, 'additional_questions' => $project->additional_questions ?? []]);
     }
 }
