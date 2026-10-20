@@ -1,11 +1,14 @@
 <?php
 
 use App\Models\Client;
+use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 
 uses(LazilyRefreshDatabase::class);
 
 it('stores validated client details and returns the created client', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     $data = Client::factory()->make(['address' => 'دمشق'])->only(['name', 'phone', 'email', 'address']);
 
     $response = $this->postJson(route('api.clients.store'), $data + ['id' => 999]);
@@ -16,6 +19,7 @@ it('stores validated client details and returns the created client', function ()
 });
 
 it('stores a client with only the required fields', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     $data = Client::factory()->make()->only(['name', 'phone']);
 
     $this->postJson(route('api.clients.store'), $data)
@@ -25,6 +29,7 @@ it('stores a client with only the required fields', function (): void {
 });
 
 it('rejects invalid client details without creating a client', function (array $data, array $errors): void {
+    Sanctum::actingAs(User::factory()->create());
     $this->postJson(route('api.clients.store'), $data)
         ->assertUnprocessable()->assertJsonValidationErrors($errors);
 

@@ -16,6 +16,7 @@ class ProjectsTable
             TextColumn::make('project_code')->label('الكود')->searchable()->copyable(),
             TextColumn::make('project_name')->label('المشروع')->searchable(),
             TextColumn::make('client.name')->label('العميل')->searchable(),
+            TextColumn::make('user.name')->label('منشئ الاستبيان')->placeholder('غير محدد')->searchable(),
             TextColumn::make('projectType.name')->label('النوع'),
             TextColumn::make('created_at')->label('تاريخ الإضافة')->dateTime('Y/m/d H:i')->sortable()->toggleable(isToggledHiddenByDefault: true),
         ])->filters([

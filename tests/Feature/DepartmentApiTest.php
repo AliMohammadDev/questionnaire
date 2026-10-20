@@ -1,13 +1,16 @@
 <?php
 
 use App\Models\Department;
+use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Sanctum\Sanctum;
 
 uses(LazilyRefreshDatabase::class);
 
 it('returns all departments ordered by sort order and id', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     $last = Department::factory()->create(['sort_order' => 5]);
     $first = Department::factory()->create(['sort_order' => 1, 'description' => 'قسم التصميم', 'is_active' => false]);
     $second = Department::factory()->create(['sort_order' => 1]);
@@ -27,6 +30,7 @@ it('returns all departments ordered by sort order and id', function (): void {
 });
 
 it('returns the first gallery image for each department', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     Storage::fake('public');
     $department = Department::factory()->create();
     $image = $department->addMedia(UploadedFile::fake()->image('department.jpg'))->toMediaCollection('gallery');
@@ -42,6 +46,7 @@ it('returns the first gallery image for each department', function (): void {
 });
 
 it('returns an empty collection when there are no departments', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     $this->getJson(route('api.departments.index'))
         ->assertOk()
         ->assertExactJson(['data' => []]);

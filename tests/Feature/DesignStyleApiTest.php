@@ -1,13 +1,16 @@
 <?php
 
 use App\Models\DesignStyle;
+use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Sanctum\Sanctum;
 
 uses(LazilyRefreshDatabase::class);
 
 it('returns all design styles ordered by sort order and id', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     $last = DesignStyle::factory()->create(['sort_order' => 5]);
     $first = DesignStyle::factory()->create(['sort_order' => 1, 'description' => 'قسم التصميم', 'is_active' => false]);
     $second = DesignStyle::factory()->create(['sort_order' => 1]);
@@ -27,6 +30,7 @@ it('returns all design styles ordered by sort order and id', function (): void {
 });
 
 it('returns the cover image for each design style', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     Storage::fake('public');
     $designStyle = DesignStyle::factory()->create();
     $image = $designStyle->addMedia(UploadedFile::fake()->image('designStyle.jpg'))->toMediaCollection('cover');
@@ -41,6 +45,7 @@ it('returns the cover image for each design style', function (): void {
 });
 
 it('returns an empty collection when there are no design styles', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     $this->getJson(route('api.design-styles.index'))
         ->assertOk()
         ->assertExactJson(['data' => []]);

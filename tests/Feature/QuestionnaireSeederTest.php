@@ -26,6 +26,7 @@ use Database\Seeders\QuestionSeeder;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Sanctum\Sanctum;
 
 uses(LazilyRefreshDatabase::class);
 
@@ -202,6 +203,7 @@ it('uses budgets and dates appropriate to the project scope and recorded dates',
 });
 
 it('provides department-specific visual questions with distinct photos usable in the api', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     Storage::fake('public');
     $this->seed(DatabaseSeeder::class);
     foreach (['DEMO-ARCH-RES' => 'architecture-visual', 'DEMO-GRAPH-SOCIAL' => 'graphic-visual', 'DEMO-WEB-SHOP' => 'web-visual'] as $projectCode => $key) {

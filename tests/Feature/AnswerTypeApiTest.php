@@ -1,11 +1,14 @@
 <?php
 
 use App\Models\AnswerType;
+use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 
 uses(LazilyRefreshDatabase::class);
 
 it('returns all answer types ordered by sort order and id', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     $last = AnswerType::factory()->multipleChoice()->create(['sort_order' => 5]);
     $first = AnswerType::factory()->create(['sort_order' => 1, 'is_active' => false]);
     $second = AnswerType::factory()->singleChoice()->create(['sort_order' => 1]);
@@ -24,5 +27,6 @@ it('returns all answer types ordered by sort order and id', function (): void {
 });
 
 it('returns an empty collection when there are no answer types', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     $this->getJson(route('api.answer-types.index'))->assertOk()->assertExactJson(['data' => []]);
 });

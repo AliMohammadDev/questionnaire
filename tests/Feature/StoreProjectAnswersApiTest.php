@@ -4,9 +4,11 @@ use App\Models\AnswerType;
 use App\Models\Project;
 use App\Models\Question;
 use App\Models\QuestionOption;
+use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Sanctum\Sanctum;
 
 uses(LazilyRefreshDatabase::class);
 
@@ -15,6 +17,7 @@ beforeEach(function (): void {
 });
 
 it('stores text answers and updates them without duplicates', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     $question = Question::factory()->create(['is_required' => true]);
     $question->contexts()->create([]);
     $url = route('api.projects.answers.store', $this->project);
@@ -25,6 +28,7 @@ it('stores text answers and updates them without duplicates', function (): void 
 });
 
 it('validates required answers and numeric limits before saving any answer', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     $text = Question::factory()->create(['is_required' => true]);
     $text->contexts()->create([]);
     $number = Question::factory()->for(AnswerType::factory()->state(['code' => 'number']))->create(['validation_rules' => ['min' => 5, 'max' => 500]]);
@@ -37,6 +41,7 @@ it('validates required answers and numeric limits before saving any answer', fun
 });
 
 it('stores only active options belonging to the answered question', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     $question = Question::factory()->for(AnswerType::factory()->multipleChoice())->create();
     $question->contexts()->create([]);
     $option = QuestionOption::factory()->for($question)->create();
@@ -51,6 +56,7 @@ it('stores only active options belonging to the answered question', function ():
 });
 
 it('enforces conditional required questions and removes hidden previous answers', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     $source = Question::factory()->for(AnswerType::factory()->state(['code' => 'boolean']))->create(['is_required' => true]);
     $source->contexts()->create([]);
     $dependent = Question::factory()->create(['is_required' => true]);
@@ -65,12 +71,14 @@ it('enforces conditional required questions and removes hidden previous answers'
 });
 
 it('rejects questions outside the project questionnaire', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     $question = Question::factory()->create();
     $this->postJson(route('api.projects.answers.store', $this->project), ['answers' => [$question->id => 'wrong']])->assertUnprocessable();
     $this->assertDatabaseCount('answers', 0);
 });
 
 it('stores valid grid answers and rejects invalid columns', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     $question = Question::factory()->for(AnswerType::factory()->state(['code' => 'checkbox_grid']))->create(['is_required' => true, 'validation_rules' => ['rows' => ['الغرفة'], 'columns' => ['صغير', 'كبير']]]);
     $question->contexts()->create([]);
     $url = route('api.projects.answers.store', $this->project);
@@ -80,6 +88,7 @@ it('stores valid grid answers and rejects invalid columns', function (): void {
 });
 
 it('stores uploaded answer attachments and rejects file paths', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     Storage::fake('public');
     $question = Question::factory()->for(AnswerType::factory()->state(['code' => 'file']))->create();
     $question->contexts()->create([]);
@@ -90,11 +99,13 @@ it('stores uploaded answer attachments and rejects file paths', function (): voi
 });
 
 it('rejects missing answers and nonexistent projects', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     $this->postJson(route('api.projects.answers.store', $this->project), [])->assertUnprocessable();
     $this->postJson(route('api.projects.answers.store', ['project' => 99999]), ['answers' => []])->assertNotFound();
 });
 
 it('stores scalar answers in their corresponding columns', function (string $type, mixed $value, string $column): void {
+    Sanctum::actingAs(User::factory()->create());
     $question = Question::factory()->for(AnswerType::factory()->state(['code' => $type]))->create();
     $question->contexts()->create([]);
     $this->postJson(route('api.projects.answers.store', $this->project), ['answers' => [$question->id => $value]])->assertOk();
@@ -108,6 +119,7 @@ it('stores scalar answers in their corresponding columns', function (string $typ
 ]);
 
 it('clears omitted optional choice answers and their option links', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     $question = Question::factory()->for(AnswerType::factory()->singleChoice())->create();
     $question->contexts()->create([]);
     $option = QuestionOption::factory()->for($question)->create();

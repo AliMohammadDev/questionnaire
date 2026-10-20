@@ -1,13 +1,16 @@
 <?php
 
 use App\Models\ProjectCategory;
+use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Sanctum\Sanctum;
 
 uses(LazilyRefreshDatabase::class);
 
 it('returns all project-categories ordered by sort order and id', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     $last = ProjectCategory::factory()->create(['sort_order' => 5]);
     $first = ProjectCategory::factory()->create(['sort_order' => 1, 'description' => 'قسم التصميم', 'is_active' => false]);
     $second = ProjectCategory::factory()->create(['sort_order' => 1]);
@@ -28,6 +31,7 @@ it('returns all project-categories ordered by sort order and id', function (): v
 });
 
 it('returns the first gallery image for each projectCategory', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     Storage::fake('public');
     $projectCategory = ProjectCategory::factory()->create();
     $image = $projectCategory->addMedia(UploadedFile::fake()->image('projectCategory.jpg'))->toMediaCollection('gallery');
@@ -43,6 +47,7 @@ it('returns the first gallery image for each projectCategory', function (): void
 });
 
 it('returns an empty collection when there are no project-categories', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     $this->getJson(route('api.project-categories.index'))
         ->assertOk()
         ->assertExactJson(['data' => []]);

@@ -70,6 +70,7 @@ it('stores additional questions when creating a project', function (): void {
 });
 
 it('replaces and clears additional questions without changing project details', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     $project = Project::factory()->create(['additional_questions' => [['question' => 'قديم', 'answer' => 'جواب']]]);
     $questions = [['question' => 'جديد', 'answer' => 'نعم', 'notes' => 'ملاحظة معدلة'], ['question' => 'بانتظار الإجابة']];
     $route = route('api.projects.additional-questions.update', $project);
@@ -86,6 +87,7 @@ it('replaces and clears additional questions without changing project details', 
 });
 
 it('rejects malformed additional questions without changing saved values', function (array $payload, string $error): void {
+    Sanctum::actingAs(User::factory()->create());
     $project = Project::factory()->create(['additional_questions' => [['question' => 'محفوظ', 'answer' => null]]]);
 
     $this->patchJson(route('api.projects.additional-questions.update', $project), $payload)

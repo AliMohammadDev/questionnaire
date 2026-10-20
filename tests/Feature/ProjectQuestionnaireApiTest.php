@@ -7,11 +7,14 @@ use App\Models\ProjectType;
 use App\Models\Question;
 use App\Models\QuestionOption;
 use App\Models\QuestionSection;
+use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 
 uses(LazilyRefreshDatabase::class);
 
 it('returns general questions and only contexts matching all project selections', function (string $dimension): void {
+    Sanctum::actingAs(User::factory()->create());
     $project = Project::factory()->create(['design_style_id' => DesignStyle::factory()->create()->id]);
     $context = $project->only(['department_id', 'project_category_id', 'project_type_id', 'design_style_id']);
     $otherType = ProjectType::factory()->create();
@@ -37,6 +40,7 @@ it('returns general questions and only contexts matching all project selections'
 })->with(['department_id', 'project_category_id', 'project_type_id', 'design_style_id']);
 
 it('does not combine dimensions from separate context rows', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     $project = Project::factory()->create();
     $otherType = ProjectType::factory()->create();
     $question = Question::factory()->create();
@@ -47,6 +51,7 @@ it('does not combine dimensions from separate context rows', function (): void {
 });
 
 it('returns field details, active ordered options and visibility conditions', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     $project = Project::factory()->create();
     $source = Question::factory()->for(AnswerType::factory()->singleChoice())->create(['sort_order' => 0]);
     $source->contexts()->create([]);
@@ -77,6 +82,7 @@ it('returns field details, active ordered options and visibility conditions', fu
 });
 
 it('excludes inactive question sections and answer types', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     $project = Project::factory()->create();
     $inactiveSection = Question::factory()->for(QuestionSection::factory()->state(['is_active' => false]))->create();
     $inactiveSection->contexts()->create([]);
@@ -87,12 +93,14 @@ it('excludes inactive question sections and answer types', function (): void {
 });
 
 it('returns an empty questionnaire when no questions apply', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     $project = Project::factory()->create();
 
     $this->getJson(route('api.projects.questionnaire.index', $project))
-        ->assertOk()->assertExactJson(['data' => [], 'project_id' => $project->id]);
+        ->assertOk()->assertExactJson(['data' => [], 'project_id' => $project->id, 'additional_questions' => []]);
 });
 
 it('returns json not found for a nonexistent project', function (): void {
+    Sanctum::actingAs(User::factory()->create());
     $this->getJson(route('api.projects.questionnaire.index', ['project' => 99999]))->assertNotFound()->assertHeader('content-type', 'application/json');
 });
