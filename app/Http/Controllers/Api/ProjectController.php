@@ -11,17 +11,17 @@ use App\Services\ProjectService;
 
 class ProjectController extends Controller
 {
-  public function __construct(private readonly ProjectService $projectService) {}
+    public function __construct(private readonly ProjectService $projectService) {}
 
-  public function updateAdditionalQuestions(UpdateProjectAdditionalQuestionsRequest $request, Project $project): ProjectResource
-  {
-    $project->update($request->validated());
+    public function updateAdditionalQuestions(UpdateProjectAdditionalQuestionsRequest $request, Project $project): ProjectResource
+    {
+        $project->update($request->validated());
 
-    return new ProjectResource($project);
-  }
+        return new ProjectResource($project);
+    }
 
-  public function store(StoreProjectRequest $request): ProjectResource
-  {
-    return new ProjectResource($this->projectService->storeProject($request->validated()));
-  }
+    public function store(StoreProjectRequest $request): ProjectResource
+    {
+        return new ProjectResource($this->projectService->storeProject($request->validated(), $request->user()));
+    }
 }

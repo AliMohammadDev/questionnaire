@@ -8,6 +8,7 @@ use App\Filament\Support\ProjectQuestionnaire;
 use App\Models\Project;
 use App\Models\Question;
 use Filament\Actions\Action;
+use Filament\Facades\Filament;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Resources\Pages\CreateRecord\Concerns\HasWizard;
 use Filament\Schemas\Components\Component;
@@ -57,7 +58,7 @@ class CreateProject extends CreateRecord
     {
         $answers = $data['questionnaire'] ?? [];
         unset($data['questionnaire']);
-        $project = Project::create($data);
+        $project = Project::create([...$data, 'user_id' => Filament::auth()->id()]);
         ProjectQuestionnaire::saveAnswers($project, ProjectQuestionnaire::questions($data), $answers);
 
         return $project;

@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
-#[Fillable(['client_id', 'department_id', 'project_category_id', 'project_type_id', 'design_style_id', 'project_code', 'project_name', 'notes', 'additional_questions', 'submitted_at', 'completed_at'])]
+#[Fillable(['user_id', 'client_id', 'department_id', 'project_category_id', 'project_type_id', 'design_style_id', 'project_code', 'project_name', 'notes', 'additional_questions', 'submitted_at', 'completed_at'])]
 class Project extends Model implements HasMedia
 {
     /** @use HasFactory<ProjectFactory> */
@@ -26,6 +26,7 @@ class Project extends Model implements HasMedia
     {
         return [
             'additional_questions' => 'array',
+            'user_id' => 'integer',
             'client_id' => 'integer',
             'department_id' => 'integer',
             'project_category_id' => 'integer',
@@ -34,6 +35,11 @@ class Project extends Model implements HasMedia
             'submitted_at' => 'datetime',
             'completed_at' => 'datetime',
         ];
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function client(): BelongsTo
