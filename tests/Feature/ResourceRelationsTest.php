@@ -64,7 +64,7 @@ it('lists only records belonging to the displayed owner', function (string $owne
         ->assertTableActionExists('view')
         ->assertTableActionHasUrl('view', $manager::getRelatedResource()::getUrl('view', ['record' => $related]), $related)
         ->assertTableActionHidden('edit', $related)
-        ->assertTableActionDoesNotExist('delete');
+        ->assertTableActionHidden('delete', $related);
 })->with([
     'Question options' => [Question::class, QuestionOption::class, 'options', OptionsRelationManager::class, ViewQuestion::class],
     'Question contexts' => [Question::class, QuestionContext::class, 'contexts', ContextsRelationManager::class, ViewQuestion::class],

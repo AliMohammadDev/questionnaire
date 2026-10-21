@@ -41,7 +41,9 @@ it('seeds a complete questionnaire with consistent project paths and selected op
     $this->assertDatabaseCount('design_styles', 11);
     $this->assertDatabaseCount('answer_types', 15);
     $this->assertDatabaseCount('projects', 27);
-    foreach (Project::with(['projectType.projectCategory', 'answers.answerOptions.questionOption'])->get() as $project) {
+    $this->assertDatabaseCount('design_style_project', 27);
+    foreach (Project::with(['projectType.projectCategory', 'designStyles', 'answers.answerOptions.questionOption'])->get() as $project) {
+        expect($project->designStyles)->toHaveCount(1);
         expect($project->projectType->project_category_id)->toBe($project->project_category_id);
         expect($project->projectType->projectCategory->department_id)->toBe($project->department_id);
         foreach ($project->answers as $answer) {
@@ -109,7 +111,7 @@ it('can seed twice without duplicates or overwriting edited catalog data', funct
     $editedProject = Project::where('project_code', 'DEMO-ARCH-RES')->sole();
     $editedProject->projectCategory->update(['name' => 'تصنيف معدل', 'sort_order' => 99]);
     $editedProject->projectType->update(['name' => 'نوع معدل', 'sort_order' => 99]);
-    $editedProject->designStyle->update(['name' => 'نمط معدل', 'sort_order' => 99]);
+    $editedProject->designStyles->first()->update(['name' => 'نمط معدل', 'sort_order' => 99]);
     $password = User::where('email', 'admin@gmail.com')->sole()->password;
     $villa = Project::where('project_code', 'DEMO-ARCH-RES')->sole();
     $villa->answers()->where('question_id', QuestionSeeder::question('budget')->id)->update(['value_number' => 25000]);
@@ -119,10 +121,11 @@ it('can seed twice without duplicates or overwriting edited catalog data', funct
     $this->seed(DatabaseSeeder::class);
 
     expect(array_map(fn (string $model): int => $model::count(), $models))->toBe($counts);
+    $this->assertDatabaseCount('design_style_project', 27);
     expect(DepartmentSeeder::department('architecture')->name)->toBe('اسم معدل من الإدارة');
     expect($editedProject->projectCategory->fresh()->name)->toBe('تصنيف معدل');
     expect($editedProject->projectType->fresh()->name)->toBe('نوع معدل');
-    expect($editedProject->designStyle->fresh()->name)->toBe('نمط معدل');
+    expect($editedProject->designStyles->first()->fresh()->name)->toBe('نمط معدل');
     expect(User::where('email', 'admin@gmail.com')->sole()->password)->toBe($password);
     $this->assertDatabaseHas('answers', ['project_id' => $villa->id, 'question_id' => QuestionSeeder::question('budget')->id, 'value_number' => 6500]);
     $this->assertDatabaseMissing('answers', ['project_id' => $villa->id, 'question_id' => QuestionSeeder::question('pool-area')->id]);
@@ -154,14 +157,14 @@ it('provides a dedicated question and a realistic demo project for every project
     $typeQuestionIds = collect(DepartmentSeeder::catalog())->flatMap(fn (array $department): array => $department['categories'])
         ->flatMap(fn (array $category): array => $category['types'])->keys()
         ->mapWithKeys(fn (string $key): array => [$key => QuestionSeeder::question('type-'.$key)->id]);
-    foreach (Project::with(['projectType', 'designStyle', 'answers'])->get() as $project) {
+    foreach (Project::with(['projectType', 'designStyles', 'answers'])->get() as $project) {
         expect($project->answers->pluck('question_id')->intersect($typeQuestionIds->values())->values()->all())
             ->toBe([$typeQuestionIds[ProjectSeeder::scenarios()[$project->project_code]['type']]]);
         $styleQuestion = QuestionSeeder::question('style-'.ProjectSeeder::scenarios()[$project->project_code]['style']);
         expect($project->answers->contains('question_id', $styleQuestion->id))->toBeTrue();
     }
     expect(Project::distinct()->pluck('project_type_id'))->toHaveCount(27);
-    expect(Project::distinct()->pluck('design_style_id'))->toHaveCount(11);
+    expect(DesignStyle::whereHas('projects')->count())->toBe(11);
 });
 
 it('omits hidden and irrelevant answers and uses suitable commercial choices', function (): void {

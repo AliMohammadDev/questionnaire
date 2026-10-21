@@ -20,8 +20,9 @@ beforeEach(function (): void {
 
 it('updates displayed and saved questions when a project context selection changes', function (string $dimension): void {
     $this->actingAs(User::factory()->administrator()->create());
-    $project = Project::factory()->make(['design_style_id' => DesignStyle::factory()->create()->id]);
-    $initial = ['department_id' => $project->department_id, 'project_category_id' => $project->project_category_id, 'project_type_id' => $project->project_type_id, 'design_style_id' => $project->design_style_id];
+    $style = DesignStyle::factory()->create();
+    $project = Project::factory()->make();
+    $initial = ['department_id' => $project->department_id, 'project_category_id' => $project->project_category_id, 'project_type_id' => $project->project_type_id, 'design_style_id' => $style->id];
     $otherType = match ($dimension) {
         'department_id' => ProjectType::factory()->create(),
         'project_category_id' => ProjectType::factory()->for(ProjectCategory::factory()->for($project->department))->create(),
@@ -43,13 +44,20 @@ it('updates displayed and saved questions when a project context selection chang
     $newQuestion = Question::factory()->create(['is_required' => true, 'title' => 'سؤال الاختيارات الجديدة']);
     $newQuestion->contexts()->create($replacement);
 
-    Livewire::test(CreateProject::class)->fillForm($initial + $project->getAttributes())
+    $formData = static function (array $context): array {
+        $context['design_style_ids'] = [$context['design_style_id']];
+        unset($context['design_style_id']);
+
+        return $context;
+    };
+
+    Livewire::test(CreateProject::class)->fillForm($formData($initial) + $project->getAttributes())
         ->goToNextWizardStep()->assertHasNoFormErrors()->assertWizardCurrentStep(2)
         ->assertFormFieldExists('questionnaire.'.$general->id)
         ->assertFormFieldExists('questionnaire.'.$originalQuestion->id)
         ->assertFormFieldDoesNotExist('questionnaire.'.$newQuestion->id)
         ->fillForm(['questionnaire' => [$originalQuestion->id => 'جواب قبل تغيير الاختيارات']])
-        ->goToPreviousWizardStep()->fillForm($replacement)->goToNextWizardStep()->assertHasNoFormErrors()
+        ->goToPreviousWizardStep()->fillForm($formData($replacement))->goToNextWizardStep()->assertHasNoFormErrors()
         ->assertFormFieldExists('questionnaire.'.$general->id)
         ->assertFormFieldDoesNotExist('questionnaire.'.$originalQuestion->id)
         ->assertFormFieldExists('questionnaire.'.$newQuestion->id)
@@ -57,7 +65,8 @@ it('updates displayed and saved questions when a project context selection chang
         ->call('create')->assertHasNoFormErrors();
 
     $this->assertDatabaseCount('projects', 1);
-    $this->assertDatabaseHas('projects', $replacement);
+    $this->assertDatabaseHas('projects', array_diff_key($replacement, ['design_style_id' => true]));
+    $this->assertDatabaseHas('design_style_project', ['project_id' => Project::sole()->id, 'design_style_id' => $replacement['design_style_id']]);
     $this->assertDatabaseCount('answers', 1);
     $this->assertDatabaseHas('answers', ['question_id' => $newQuestion->id, 'value_text' => 'جواب بعد تغيير الاختيارات']);
     $this->assertDatabaseMissing('answers', ['question_id' => $originalQuestion->id]);

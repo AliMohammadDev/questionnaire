@@ -15,8 +15,9 @@ uses(LazilyRefreshDatabase::class);
 
 it('returns general questions and only contexts matching all project selections', function (string $dimension): void {
     Sanctum::actingAs(User::factory()->create());
-    $project = Project::factory()->create(['design_style_id' => DesignStyle::factory()->create()->id]);
-    $context = $project->only(['department_id', 'project_category_id', 'project_type_id', 'design_style_id']);
+    $style = DesignStyle::factory()->create();
+    $project = Project::factory()->hasAttached($style, [], 'designStyles')->create();
+    $context = $project->only(['department_id', 'project_category_id', 'project_type_id']) + ['design_style_id' => $style->id];
     $otherType = ProjectType::factory()->create();
     $other = [
         'department_id' => $otherType->projectCategory->department_id,

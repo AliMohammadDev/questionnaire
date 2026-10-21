@@ -57,7 +57,10 @@ class ProjectSeeder extends Seeder
             if (array_intersect_assoc($scenario, $criteria) !== $criteria) {
                 continue;
             }
-            $recordId = Project::where('project_code', $code)->value($foreignKey);
+            $project = Project::where('project_code', $code)->first();
+            $recordId = $foreignKey === 'design_style_id'
+                ? $project?->designStyles()->value('design_styles.id')
+                : $project?->getAttribute($foreignKey);
             if ($recordId !== null) {
                 return (int) $recordId;
             }
@@ -72,17 +75,17 @@ class ProjectSeeder extends Seeder
             $department = DepartmentSeeder::department($data['department']);
             $category = ProjectCategorySeeder::category($data['department'], $data['category']);
             $type = ProjectTypeSeeder::type($data['department'], $data['category'], $data['type']);
-            Project::updateOrCreate(['project_code' => $code], [
+            $project = Project::updateOrCreate(['project_code' => $code], [
                 'project_name' => $data['name'].' — تجريبي',
                 'client_id' => Client::where('email', $data['client'].'.demo@example.test')->sole()->id,
                 'department_id' => $department->id,
                 'project_category_id' => $category->id,
                 'project_type_id' => $type->id,
-                'design_style_id' => DesignStyleSeeder::style($data['style'])->id,
                 'notes' => 'سيناريو وهمي للتدريب والعرض. الميزانية لخدمات التصميم والتطوير بالدولار الأمريكي. '.$data['goal'],
                 'submitted_at' => $data['submitted_at'],
                 'completed_at' => $data['completed_at'],
             ]);
+            $project->designStyles()->sync([DesignStyleSeeder::style($data['style'])->id]);
         }
     }
 }

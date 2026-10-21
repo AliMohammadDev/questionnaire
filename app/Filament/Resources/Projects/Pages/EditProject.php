@@ -11,6 +11,16 @@ class EditProject extends EditRecord
 {
     protected static string $resource = ProjectResource::class;
 
+    /** @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        unset($data['design_style_ids']);
+
+        return $data;
+    }
+
     protected function getHeaderActions(): array
     {
         return [

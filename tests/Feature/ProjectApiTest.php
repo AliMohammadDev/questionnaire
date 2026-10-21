@@ -12,8 +12,10 @@ uses(LazilyRefreshDatabase::class);
 
 it('creates a project for an existing client with a generated code', function (): void {
     Sanctum::actingAs(User::factory()->create());
-    $data = Project::factory()->make(['design_style_id' => DesignStyle::factory()->create()->id, 'notes' => 'مشروع جديد'])
-        ->only(['client_id', 'department_id', 'project_category_id', 'project_type_id', 'design_style_id', 'project_name', 'notes']);
+    $data = Project::factory()->make(['notes' => 'مشروع جديد'])
+        ->only(['client_id', 'department_id', 'project_category_id', 'project_type_id', 'project_name', 'notes']);
+
+    $data['design_style_ids'] = [DesignStyle::factory()->create()->id];
 
     $response = $this->postJson(route('api.projects.store'), $data + ['project_code' => 'CUSTOM', 'completed_at' => '2026-01-01']);
     $response->assertCreated()->assertJsonFragment($data);
@@ -21,7 +23,8 @@ it('creates a project for an existing client with a generated code', function ()
     expect($response->json('data.id'))->toBe($project->id);
     expect($project->project_code)->toStartWith('PRJ-')->not->toBe('CUSTOM');
     expect($project->completed_at)->toBeNull();
-    $this->assertDatabaseHas('projects', $data);
+    $this->assertDatabaseHas('projects', array_diff_key($data, ['design_style_ids' => true]));
+    $this->assertDatabaseHas('design_style_project', ['project_id' => $project->id, 'design_style_id' => $data['design_style_ids'][0]]);
     $this->assertDatabaseCount('clients', 1);
     $this->assertDatabaseCount('answers', 0);
 
@@ -34,15 +37,16 @@ it('allows creating a project without optional details', function (): void {
     $data = Project::factory()->make()->only(['client_id', 'department_id', 'project_category_id', 'project_type_id']);
 
     $this->postJson(route('api.projects.store'), $data)->assertCreated()
-        ->assertJsonPath('data.design_style_id', null)->assertJsonPath('data.project_name', null);
+        ->assertJsonPath('data.design_style_ids', [])->assertJsonPath('data.project_name', null);
 });
 
 it('rejects missing or nonexistent project references', function (bool $missing): void {
     Sanctum::actingAs(User::factory()->create());
-    $data = $missing ? [] : array_fill_keys(['client_id', 'department_id', 'project_category_id', 'project_type_id', 'design_style_id'], 99999);
+    $data = $missing ? [] : array_fill_keys(['client_id', 'department_id', 'project_category_id', 'project_type_id'], 99999);
     $errors = ['client_id', 'department_id', 'project_category_id', 'project_type_id'];
     if (! $missing) {
-        $errors[] = 'design_style_id';
+        $data['design_style_ids'] = [99999];
+        $errors[] = 'design_style_ids.0';
     }
 
     $this->postJson(route('api.projects.store'), $data)->assertUnprocessable()->assertJsonValidationErrors($errors);

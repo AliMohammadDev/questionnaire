@@ -45,8 +45,8 @@ it('creates catalog records through the admin form without a slug column', funct
 ]);
 
 it('removes existing slug values while preserving catalog records and project relationships', function (): void {
-    $project = Project::factory()->for(DesignStyle::factory(), 'designStyle')->create();
-    $records = [$project->department, $project->projectCategory, $project->projectType, $project->designStyle];
+    $project = Project::factory()->hasAttached(DesignStyle::factory(), [], 'designStyles')->create();
+    $records = [$project->department, $project->projectCategory, $project->projectType, $project->designStyles->first()];
     $migration = require database_path('migrations/2026_10_12_115516_remove_slug_columns_from_project_catalog_tables.php');
     $migration->down();
     foreach ($records as $record) {
@@ -64,6 +64,6 @@ it('removes existing slug values while preserving catalog records and project re
         'department_id' => $project->department_id,
         'project_category_id' => $project->project_category_id,
         'project_type_id' => $project->project_type_id,
-        'design_style_id' => $project->design_style_id,
     ]);
+    $this->assertDatabaseHas('design_style_project', ['project_id' => $project->id, 'design_style_id' => $project->designStyles->first()->id]);
 });

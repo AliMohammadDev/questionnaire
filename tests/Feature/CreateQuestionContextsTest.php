@@ -99,9 +99,8 @@ it('saves a project using a type from another category and shows its generated q
         'department_id' => $type->projectCategory->department_id,
         'project_category_id' => $otherCategory->id,
         'project_type_id' => $type->id,
-        'design_style_id' => $styles->first()->id,
     ]);
-    $data = $project->only(['department_id', 'project_category_id', 'project_type_id', 'design_style_id']);
+    $data = $project->only(['department_id', 'project_category_id', 'project_type_id']) + ['design_style_ids' => [$styles->first()->id]];
     $question->contexts()->create(['department_id' => $data['department_id']]);
 
     expect(app(QuestionnaireService::class)->getQuestions($data)->modelKeys())->toBe([$question->id]);
@@ -112,7 +111,7 @@ it('saves a project using a type from another category and shows its generated q
         ->fillForm(['questionnaire' => [$question->id => 'إجابة للسياق المشترك']])
         ->call('create')->assertHasNoFormErrors();
 
-    $this->assertDatabaseHas('projects', $data);
+    $this->assertDatabaseHas('projects', array_diff_key($data, ['design_style_ids' => true]));
     $this->assertDatabaseCount('questions', 1);
     $this->assertDatabaseCount('answers', 1);
 });

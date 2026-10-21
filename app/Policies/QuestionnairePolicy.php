@@ -28,7 +28,8 @@ class QuestionnairePolicy
         $relationships = match ($record::class) {
             Department::class => ['projectCategories', 'questionContexts', 'projects'],
             ProjectCategory::class => ['projectTypes', 'questionContexts', 'projects'],
-            ProjectType::class, DesignStyle::class => ['questionContexts', 'projects'],
+            ProjectType::class => ['questionContexts', 'projects'],
+            DesignStyle::class => ['questionContexts', 'projects'],
             QuestionSection::class, AnswerType::class => ['questions'],
             Question::class => ['options', 'contexts', 'conditions', 'dependentConditions', 'answers'],
             QuestionOption::class => ['questionConditions', 'answerOptions'],

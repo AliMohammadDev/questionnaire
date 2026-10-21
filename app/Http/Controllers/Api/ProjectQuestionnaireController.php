@@ -15,7 +15,7 @@ class ProjectQuestionnaireController extends Controller
     public function index(Project $project): AnonymousResourceCollection
     {
         return QuestionnaireQuestionResource::collection(
-            $this->questionnaireService->getQuestions($project->getAttributes()),
+            $this->questionnaireService->getQuestions($project->questionnaireData()),
         )->additional(['project_id' => $project->id, 'additional_questions' => $project->additional_questions ?? []]);
     }
 }

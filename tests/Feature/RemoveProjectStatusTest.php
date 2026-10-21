@@ -50,7 +50,7 @@ it('removes existing status columns while preserving projects contexts and answe
     $this->assertModelExists($answer);
     $this->assertModelExists($answer->project);
     $this->assertModelExists($context);
-    expect(ProjectQuestionnaire::questions($answer->project->getAttributes())->modelKeys())->toContain($answer->question_id);
+    expect(ProjectQuestionnaire::questions($answer->project->questionnaireData())->modelKeys())->toContain($answer->question_id);
     expect(Schema::hasColumn('projects', 'status'))->toBeFalse();
     expect(Schema::hasColumn('question_contexts', 'status'))->toBeFalse();
 });

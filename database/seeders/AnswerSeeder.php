@@ -131,7 +131,7 @@ class AnswerSeeder extends Seeder
         }
         foreach (ProjectSeeder::scenarios() as $code => $scenario) {
             $project = Project::where('project_code', $code)->sole();
-            $questions = ProjectQuestionnaire::questions($project->getAttributes())->keyBy('id');
+            $questions = ProjectQuestionnaire::questions($project->questionnaireData())->keyBy('id');
             $valuesByKey = self::demoAnswers($scenario);
             $answers = [];
             foreach ($valuesByKey as $key => $value) {

@@ -34,7 +34,7 @@ class CreateProject extends CreateRecord
     {
         return [
             Step::make('بيانات المشروع')->schema(ProjectForm::components()),
-            Step::make('الاستبيان')->description('أجب عن الأسئلة المناسبة للقسم والتصنيف والنوع والنمط المختار.')
+            Step::make('الاستبيان')->description('أجب عن الأسئلة المناسبة للقسم والتصنيف والنوع والأنماط المختارة.')
                 ->schema(fn (): array => ProjectQuestionnaire::components($this->questionnaireQuestions)),
         ];
     }
@@ -58,8 +58,10 @@ class CreateProject extends CreateRecord
     {
         $answers = $data['questionnaire'] ?? [];
         unset($data['questionnaire']);
+        $questionnaireData = $data;
+        unset($data['design_style_ids']);
         $project = Project::create([...$data, 'user_id' => Filament::auth()->id()]);
-        ProjectQuestionnaire::saveAnswers($project, ProjectQuestionnaire::questions($data), $answers);
+        ProjectQuestionnaire::saveAnswers($project, ProjectQuestionnaire::questions($questionnaireData), $answers);
 
         return $project;
     }
