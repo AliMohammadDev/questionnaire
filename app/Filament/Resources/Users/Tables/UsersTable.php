@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Users\Tables;
 
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
@@ -17,7 +19,8 @@ class UsersTable
             TextColumn::make('roles.name')->label('الأدوار')->badge()->placeholder('دون دور'),
             TextColumn::make('created_at')->label('تاريخ الإضافة')->dateTime('Y/m/d H:i')->sortable()->toggleable(isToggledHiddenByDefault: true),
         ])->filters([
-        ])->recordActions([ViewAction::make(), EditAction::make()])
+        ])->recordActions([ViewAction::make(), EditAction::make(), DeleteAction::make()])
+            ->toolbarActions([DeleteBulkAction::make()])
             ->defaultSort('id', 'desc')
             ->striped()->paginated([10, 25, 50])
             ->emptyStateHeading('لا توجد سجلات بعد')

@@ -4,6 +4,8 @@ namespace App\Filament\Resources\Media\Tables;
 
 use App\Models\Media;
 use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
@@ -22,7 +24,8 @@ class MediaTable
             TextColumn::make('size')->label('الحجم')->formatStateUsing(fn (int $state): string => Number::fileSize($state)),
             TextColumn::make('created_at')->label('تاريخ الإضافة')->dateTime('Y/m/d H:i')->sortable()->toggleable(isToggledHiddenByDefault: true),
         ])->filters([
-        ])->recordActions([ViewAction::make(), EditAction::make(), Action::make('open')->label('فتح الملف')->icon('heroicon-o-arrow-top-right-on-square')->url(fn (Media $record): string => $record->getUrl())->openUrlInNewTab()])
+        ])->recordActions([ViewAction::make(), EditAction::make(), DeleteAction::make(), Action::make('open')->label('فتح الملف')->icon('heroicon-o-arrow-top-right-on-square')->url(fn (Media $record): string => $record->getUrl())->openUrlInNewTab()])
+            ->toolbarActions([DeleteBulkAction::make()])
             ->defaultSort('id', 'desc')
             ->striped()->paginated([10, 25, 50])
             ->emptyStateHeading('لا توجد سجلات بعد')

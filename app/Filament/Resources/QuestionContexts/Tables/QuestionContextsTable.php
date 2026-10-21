@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\QuestionContexts\Tables;
 
 use App\Filament\Support\QuestionnaireFields;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
@@ -39,7 +41,8 @@ class QuestionContextsTable
                     return $query;
                 })
                 ->indicateUsing(fn (array $data): ?string => collect($data)->contains(fn (mixed $value): bool => filled($value)) ? 'سياق السؤال' : null),
-        ], layout: FiltersLayout::AboveContent)->recordActions([ViewAction::make(), EditAction::make()])
+        ], layout: FiltersLayout::AboveContent)->recordActions([ViewAction::make(), EditAction::make(), DeleteAction::make()])
+            ->toolbarActions([DeleteBulkAction::make()])
             ->defaultSort('id', 'desc')
             ->striped()->paginated([10, 25, 50])
             ->emptyStateHeading('لا توجد سجلات بعد')

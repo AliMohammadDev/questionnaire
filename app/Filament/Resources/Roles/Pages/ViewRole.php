@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Roles\Pages;
 
 use App\Filament\Resources\Roles\RoleResource;
 use BezhanSalleh\FilamentShield\Resources\Roles\Pages\ViewRole as ShieldViewRole;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 
 class ViewRole extends ShieldViewRole
@@ -14,6 +15,6 @@ class ViewRole extends ShieldViewRole
 
     protected function getHeaderActions(): array
     {
-        return [EditAction::make()->label('تعديل الصلاحيات')];
+        return [EditAction::make()->label('تعديل الصلاحيات'), DeleteAction::make()];
     }
 }

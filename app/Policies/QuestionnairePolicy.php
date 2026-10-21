@@ -16,6 +16,7 @@ use App\Models\QuestionSection;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Permission\Models\Role;
 
 class QuestionnairePolicy
 {
@@ -34,11 +35,28 @@ class QuestionnairePolicy
             Client::class => ['projects'],
             Project::class => ['answers'],
             Answer::class => ['answerOptions'],
+            User::class => ['projects'],
+            Role::class => ['users'],
             default => [],
         };
+        $labels = [
+            'projectCategories' => 'تصنيفات مشاريع',
+            'projectTypes' => 'أنواع مشاريع',
+            'questionContexts' => 'سياقات أسئلة',
+            'projects' => 'مشاريع',
+            'questions' => 'أسئلة',
+            'options' => 'خيارات السؤال',
+            'contexts' => 'سياقات السؤال',
+            'conditions' => 'شروط السؤال',
+            'dependentConditions' => 'شروط أسئلة تعتمد على هذا السؤال',
+            'answers' => 'إجابات',
+            'questionConditions' => 'شروط أسئلة',
+            'answerOptions' => 'خيارات إجابات',
+            'users' => 'مستخدمون مسند إليهم الدور',
+        ];
         foreach ($relationships as $relationship) {
             if ($record->{$relationship}()->exists()) {
-                return Response::deny('هذا السجل مستخدم. عدّل السجلات المرتبطة به قبل حذفه.');
+                return Response::deny('لا يمكن الحذف لوجود '.$labels[$relationship].' مرتبطة بهذا السجل. احذفها أو عدّل ارتباطها أولاً. لن تُحذف تلقائياً.');
             }
         }
 

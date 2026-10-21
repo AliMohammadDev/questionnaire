@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Departments\Tables;
 
 use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
@@ -24,6 +25,7 @@ class DepartmentsTable
         ])->filters([
             TernaryFilter::make('is_active')->label('الحالة')->trueLabel('فعال')->falseLabel('غير فعال'),
         ])->recordActions([ViewAction::make(), EditAction::make(), DeleteAction::make()])
+            ->toolbarActions([DeleteBulkAction::make()])
             ->defaultSort('sort_order', 'asc')
             ->striped()->paginated([10, 25, 50])
             ->emptyStateHeading('لا توجد سجلات بعد')

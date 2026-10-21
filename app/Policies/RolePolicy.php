@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Auth\Access\Response;
 use Illuminate\Foundation\Auth\User as AuthUser;
 use Spatie\Permission\Models\Role;
 
@@ -32,9 +33,11 @@ class RolePolicy
         return $authUser->can('Update:Role');
     }
 
-    public function delete(AuthUser $authUser, Role $role): bool
+    public function delete(AuthUser $authUser, Role $role): Response
     {
-        return $authUser->can('Delete:Role');
+        return $authUser->can('Delete:Role')
+            ? (new QuestionnairePolicy)->delete($authUser, $role)
+            : Response::deny();
     }
 
     public function deleteAny(AuthUser $authUser): bool

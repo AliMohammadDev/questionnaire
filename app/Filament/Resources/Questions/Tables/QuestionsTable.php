@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Questions\Tables;
 
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
@@ -22,7 +24,8 @@ class QuestionsTable
             TextColumn::make('created_at')->label('تاريخ الإضافة')->dateTime('Y/m/d H:i')->sortable()->toggleable(isToggledHiddenByDefault: true),
         ])->filters([
             TernaryFilter::make('is_active')->label('الحالة')->trueLabel('فعال')->falseLabel('غير فعال'),
-        ])->recordActions([ViewAction::make(), EditAction::make()])
+        ])->recordActions([ViewAction::make(), EditAction::make(), DeleteAction::make()])
+            ->toolbarActions([DeleteBulkAction::make()])
             ->defaultSort('sort_order', 'asc')
             ->striped()->paginated([10, 25, 50])
             ->emptyStateHeading('لا توجد سجلات بعد')

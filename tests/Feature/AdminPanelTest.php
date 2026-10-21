@@ -300,12 +300,14 @@ it('deletes an unused department from the department list', function (): void {
     $this->assertModelMissing($department);
 });
 
-it('hides department deletion in the list when categories depend on it', function (): void {
+it('explains why department deletion is blocked when categories depend on it', function (): void {
     $this->actingAs(User::factory()->administrator()->create());
     $category = ProjectCategory::factory()->create();
 
     Livewire::test(ListDepartments::class)
-        ->assertTableActionHidden('delete', $category->department);
+        ->assertTableActionVisible('delete', $category->department)
+        ->callTableAction('delete', $category->department)
+        ->assertNotified('لا يمكن الحذف لوجود تصنيفات مشاريع مرتبطة بهذا السجل. احذفها أو عدّل ارتباطها أولاً. لن تُحذف تلقائياً.');
 
     $this->assertModelExists($category->department);
 });

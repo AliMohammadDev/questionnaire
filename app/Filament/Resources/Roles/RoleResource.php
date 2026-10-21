@@ -9,6 +9,7 @@ use App\Filament\Resources\Roles\Pages\ViewRole;
 use BezhanSalleh\FilamentShield\Facades\FilamentShield;
 use BezhanSalleh\FilamentShield\Resources\Roles\RoleResource as ShieldRoleResource;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Hidden;
@@ -100,7 +101,7 @@ class RoleResource extends ShieldRoleResource
             ViewAction::make()->label('تفاصيل الدور'),
             EditAction::make()->label('تعديل الصلاحيات'),
             DeleteAction::make(),
-        ])->defaultSort('name')->striped()->paginated([10, 25, 50])
+        ])->toolbarActions([DeleteBulkAction::make()])->defaultSort('name')->striped()->paginated([10, 25, 50])
             ->emptyStateHeading('لا توجد أدوار بعد')
             ->emptyStateDescription('أضف دورًا جديدًا وحدد صلاحياته، ثم أسنده للمستخدمين من صفحة المستخدمين.');
     }
