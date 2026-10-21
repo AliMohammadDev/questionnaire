@@ -18,7 +18,7 @@ class QuestionContextForm
   public static function configureCreate(Schema $schema): Schema
   {
     return $schema->components([
-      Section::make('البيانات الأساسية')->description('اختر عدة تصنيفات وأنواع وأنماط لإضافة سياقات للسؤال دفعة واحدة. اترك المستوى فارغاً ليشمل جميع قيمه.')->schema([
+      Section::make('البيانات الأساسية')->description('سيُربط السؤال بكل تركيبة من التصنيفات والأنواع والأنماط المختارة دون تكرار السؤال. اترك المستوى فارغاً ليشمل جميع قيمه.')->schema([
         QuestionnaireFields::relationship('question_id', 'question', 'title', 'السؤال'),
         QuestionnaireFields::department(false)->afterStateUpdated(function (Set $set): void {
           $set('project_category_ids', []);
@@ -27,10 +27,9 @@ class QuestionContextForm
         Select::make('project_category_ids')->label('تصنيفات المشروع')->multiple()->searchable()->preload()
           ->options(fn(Get $get): array => ProjectCategory::query()->when($get('department_id'), fn(Builder $query, mixed $department): Builder => $query->where('department_id', $department))->orderBy('sort_order')->pluck('name', 'id')->all())
           ->in(fn(Select $component): array => array_keys($component->getOptions()))
-          ->live()->afterStateUpdated(fn(Set $set) => $set('project_type_ids', [])),
+          ->live(),
         Select::make('project_type_ids')->label('أنواع المشروع')->multiple()->searchable()->preload()
           ->options(fn(Get $get): array => ProjectType::query()
-            ->when($get('project_category_ids'), fn(Builder $query, array $categories): Builder => $query->whereIn('project_category_id', $categories))
             ->when($get('department_id'), fn(Builder $query, mixed $department): Builder => $query->whereHas('projectCategory', fn(Builder $query): Builder => $query->where('department_id', $department)))
             ->orderBy('sort_order')->pluck('name', 'id')->all())
           ->in(fn(Select $component): array => array_keys($component->getOptions())),
@@ -44,7 +43,7 @@ class QuestionContextForm
   public static function configure(Schema $schema): Schema
   {
     return $schema->components([
-      Section::make('البيانات الأساسية')->description('اترك أي مستوى فارغاً ليشمل جميع قيمه. يجب أن تتوافق الاختيارات مع هيكل المشروع.')->schema([
+      Section::make('البيانات الأساسية')->description('اترك أي مستوى فارغاً ليشمل جميع قيمه. يمكن اختيار النوع من أي تصنيف ضمن القسم الرئيسي المحدد.')->schema([
         QuestionnaireFields::relationship('question_id', 'question', 'title', 'السؤال'),
         QuestionnaireFields::department(false),
         QuestionnaireFields::category(false),

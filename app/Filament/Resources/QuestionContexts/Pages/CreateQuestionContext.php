@@ -4,7 +4,6 @@ namespace App\Filament\Resources\QuestionContexts\Pages;
 
 use App\Filament\Resources\QuestionContexts\QuestionContextResource;
 use App\Filament\Resources\QuestionContexts\Schemas\QuestionContextForm;
-use App\Models\ProjectType;
 use App\Models\Question;
 use App\Models\QuestionContext;
 use Filament\Resources\Pages\CreateRecord;
@@ -28,15 +27,11 @@ class CreateQuestionContext extends CreateRecord
     Question::query()->whereKey($data['question_id'])->lockForUpdate()->firstOrFail();
     $categories = $data['project_category_ids'] ?: [null];
     $styles = $data['design_style_ids'] ?: [null];
-    $types = ProjectType::query()->whereIn('id', $data['project_type_ids'])->get();
+    $types = $data['project_type_ids'] ?: [null];
     $firstContext = null;
 
     foreach ($categories as $categoryId) {
-      $categoryTypes = $types->filter(fn(ProjectType $type): bool => $categoryId === null || $type->project_category_id == $categoryId)->modelKeys();
-      if ($types->isEmpty()) {
-        $categoryTypes = [null];
-      }
-      foreach ($categoryTypes as $typeId) {
+      foreach ($types as $typeId) {
         foreach ($styles as $styleId) {
           $context = QuestionContext::firstOrCreate([
             'question_id' => $data['question_id'],

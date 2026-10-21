@@ -2,6 +2,7 @@
 
 use App\Models\DesignStyle;
 use App\Models\Project;
+use App\Models\ProjectCategory;
 use App\Models\ProjectType;
 use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
@@ -124,3 +125,18 @@ it('returns 401 when creating a project without a valid token', function (?strin
 
     $this->assertDatabaseCount('projects', 0);
 })->with([null, 'invalid-token']);
+
+it('creates a project with a type from another category within the same department', function (): void {
+    Sanctum::actingAs(User::factory()->create());
+    $type = ProjectType::factory()->create();
+    $category = ProjectCategory::factory()->for($type->projectCategory->department)->create();
+    $data = Project::factory()->make([
+        'department_id' => $type->projectCategory->department_id,
+        'project_category_id' => $category->id,
+        'project_type_id' => $type->id,
+    ])->only(['client_id', 'department_id', 'project_category_id', 'project_type_id']);
+
+    $this->postJson(route('api.projects.store'), $data)->assertCreated()->assertJsonFragment($data);
+
+    $this->assertDatabaseHas('projects', $data);
+});
